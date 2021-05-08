@@ -1,0 +1,502 @@
+<!DOCTYPE html>
+<html lang="en-US">
+  <head>
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="author" content="Nina Reed" />
+    
+    <link rel="shortcut icon" type="image/x-icon" href="../img/favicon.ico">
+    <title>Project 2: Modeling, Testing, and Predicting</title>
+    <meta name="generator" content="Hugo 0.83.1" />
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css" integrity="sha384-BVYiiSIFeK1dGmJRAkycuHAHRg32OmUcww7on3RYdg4Va+PmSTsz/K68vbdEjh4u" crossorigin="anonymous">
+    <link rel="stylesheet" type="text/css" href="../css/main.css" />
+    <link rel="stylesheet" type="text/css" href="https://maxcdn.bootstrapcdn.com/font-awesome/4.7.0/css/font-awesome.min.css" />
+    <link rel="stylesheet" type="text/css" href="https://fonts.googleapis.com/css?family=Source+Sans+Pro:200,400,200bold,400old" />
+    
+    <!--[if lt IE 9]>
+			<script src="https://oss.maxcdn.com/libs/html5shiv/3.7.0/html5shiv.js"></script>
+			<script src="https://oss.maxcdn.com/libs/respond.js/1.4.2/respond.min.js"></script>
+		<![endif]-->
+
+    
+  </head>
+
+  <body>
+    <div id="wrap">
+      
+      <nav class="navbar navbar-default">
+  <div class="container">
+    <div class="navbar-header">
+      <a class="navbar-brand" href="../"><i class="fa fa-home"></i></a>
+      <button type="button" class="navbar-toggle" data-toggle="collapse" data-target="#navbar">
+        <span class="icon-bar"></span>
+        <span class="icon-bar"></span>
+        <span class="icon-bar"></span>
+      </button>
+    </div>
+    <div class="navbar-collapse collapse" id="navbar">
+      <ul class="nav navbar-nav navbar-right">
+      
+        
+        <li><a href="../post/">BLOG</a></li>
+        
+        <li><a href="../projects/">PROJECTS</a></li>
+        
+        <li><a href="../resume/">RESUME</a></li>
+        
+      
+      </ul>
+    </div>
+  </div>
+</nav>
+
+      <div class="container">
+        <div class="blog-post">
+          <h3>
+            <strong><a href="../project2fa/">Project 2: Modeling, Testing, and Predicting</a></strong>
+          </h3>
+        </div>
+ 
+<div class="blog-title">
+          <h4>
+         January 1, 0001 
+            &nbsp;&nbsp;
+            
+          </h4>
+        </div>
+
+        <div class="panel panel-default">
+          <div class="panel-body">
+            <div class="blogpost">
+              
+
+
+<div id="r-markdown" class="section level2">
+<h2>R Markdown</h2>
+<pre class="r"><code>FinancialAid &lt;- read.csv(&quot;FinancialAid.csv&quot;)
+library(dplyr)
+library(ggplot2)
+library(lmtest)
+library(sandwich)
+library(tidyverse)</code></pre>
+<pre class="r"><code>FinAid &lt;- FinancialAid %&gt;% mutate(cond = ifelse(condscholind == 
+    &quot;Y&quot;, 1, 0)) %&gt;% select(cond, schoolname, academicyear, condscholind, 
+    ftnumstudents, numstudents, ftrecvgrant, totalrecvgrant, 
+    totalrecvgrantp, ftgrantamtmedian, ftgrantamt75, ftgrantamt25) %&gt;% 
+    na.omit()
+FinAid$year &lt;- factor(FinAid$academicyear, labels = c(&quot;2014&quot;, 
+    &quot;2015&quot;, &quot;2016&quot;, &quot;2017&quot;, &quot;2018&quot;))</code></pre>
+</div>
+<div id="introduction" class="section level2">
+<h2>Introduction</h2>
+<p>The dataset “FinancialAid” was pulled from AccessLex Institute which compiled datasets from law schools and their annual financial aid that is reported to the American Bar Association (ABA). I have selected the law school names, academic year, number of students, number of full-time students receving grants, total grants received, total grant percentage, and the 25th percentile, median, and 75th percentile in grant amounts for full time students. The binomial variable is 1 if the law school requires conditional scholarships and 0 if they do not require conditional scholarships. There are a total of 1013 observations gathered from law schools between 2014-2018. I am interested in this data as I have been accepted into UT Law for the coming school year and would like to see how other schools distribute scholarship amounts.</p>
+</div>
+<div id="manova-test" class="section level2">
+<h2>(1)MANOVA TEST</h2>
+<pre class="r"><code>library(rstatix)
+# Assumtions
+FA_sample &lt;- FinAid %&gt;% sample_n(1000)
+group &lt;- FA_sample$year
+DV &lt;- FA_sample %&gt;% select(ftnumstudents, ftgrantamtmedian)
+sapply(split(DV, group), mshapiro_test)  #test of multivariate normality</code></pre>
+<pre><code>##           2014         2015         2016        2017         2018        
+## statistic 0.8771832    0.871016     0.8509833   0.8637913    0.8656377   
+## p.value   1.199252e-11 5.090997e-12 5.23305e-13 1.649345e-12 2.866861e-12</code></pre>
+<pre class="r"><code>box_m(DV, group)  #test of homogeneity of covariance</code></pre>
+<pre><code>## # A tibble: 1 x 4
+##   statistic p.value parameter method                                            
+##       &lt;dbl&gt;   &lt;dbl&gt;     &lt;dbl&gt; &lt;chr&gt;                                             
+## 1      25.1  0.0142        12 Box&#39;s M-test for Homogeneity of Covariance Matric…</code></pre>
+<pre class="r"><code>ggplot(FinAid, aes(x = ftgrantamtmedian, y = ftnumstudents)) + 
+    geom_point(alpha = 1) + geom_density_2d(h = 20) + coord_fixed() + 
+    facet_wrap(~year)</code></pre>
+<p><img src="../Project2FA_files/figure-html/unnamed-chunk-3-1.png" width="768" style="display: block; margin: auto;" />
+When testing for normality within each group, all academic years had a p-value less than 0.05. This indicates that the MANOVA multivariate normality assumption is not satisfied.</p>
+<p>Ho:For ftnumstudents and ftgrantamtmedian, means for all years are equal.
+Ha: For at least one variable, one year mean is different.</p>
+<pre class="r"><code># MANOVA
+FNmanova &lt;- manova(cbind(ftnumstudents, ftgrantamtmedian) ~ year, 
+    data = FinAid)
+summary(FNmanova)  #significant</code></pre>
+<pre><code>##             Df   Pillai approx F num Df den Df    Pr(&gt;F)    
+## year         4 0.048056   6.2041      8   2016 6.072e-08 ***
+## Residuals 1008                                              
+## ---
+## Signif. codes:  0 &#39;***&#39; 0.001 &#39;**&#39; 0.01 &#39;*&#39; 0.05 &#39;.&#39; 0.1 &#39; &#39; 1</code></pre>
+<pre class="r"><code>summary.aov(FNmanova)</code></pre>
+<pre><code>##  Response ftnumstudents :
+##               Df   Sum Sq Mean Sq F value Pr(&gt;F)
+## year           4   113079   28270  0.4101 0.8014
+## Residuals   1008 69479964   68929               
+## 
+##  Response ftgrantamtmedian :
+##               Df     Sum Sq   Mean Sq F value    Pr(&gt;F)    
+## year           4 3.4988e+09 874693935  11.394 4.767e-09 ***
+## Residuals   1008 7.7380e+10  76765524                      
+## ---
+## Signif. codes:  0 &#39;***&#39; 0.001 &#39;**&#39; 0.01 &#39;*&#39; 0.05 &#39;.&#39; 0.1 &#39; &#39; 1</code></pre>
+<pre class="r"><code>pairwise.t.test(FinAid$ftgrantamtmedian, FinAid$year, p.adj = &quot;none&quot;)</code></pre>
+<pre><code>## 
+##  Pairwise comparisons using t tests with pooled SD 
+## 
+## data:  FinAid$ftgrantamtmedian and FinAid$year 
+## 
+##      2014    2015    2016    2017   
+## 2015 0.08225 -       -       -      
+## 2016 0.00078 0.10115 -       -      
+## 2017 2.4e-06 0.00259 0.16930 -      
+## 2018 2.4e-09 1.8e-05 0.00777 0.19495
+## 
+## P value adjustment method: none</code></pre>
+<pre class="r"><code># 1 manova, 1 anova, 10 t.tests = 12 total Probability of at
+# least one Type I error:
+1 - (0.95)^12</code></pre>
+<pre><code>## [1] 0.4596399</code></pre>
+<pre class="r"><code>0.05/12  #Bonferroni correction </code></pre>
+<pre><code>## [1] 0.004166667</code></pre>
+<p>A one-way MANOVA was conducted to determine the effect of ftnumstudents and ftgrantamtmedian across academic years. This yeilded a p-value significantly less than 0.05 indicating that at least one of teh variables’ mean differs for at least one academic year. The univariate ANOVA indicated that only ftgrantamtmedian had a significant p-value less than 0.05.<br />
+Pairwise t-tests were then conducted, leading to 12 tests in total. This caused the probability of at least one Type I error to be 0.4596, making the bonferroni adjusted significance level 0.0042. Using this new significance level, one comparison (2016 &amp; 2018) that was significant before is no longer so.</p>
+</div>
+<div id="randomization-test" class="section level2">
+<h2>(2)Randomization Test:</h2>
+<pre class="r"><code>set.seed(348)
+FinAid %&gt;% group_by(cond) %&gt;% summarize(ftamtmeans = mean(ftgrantamtmedian)) %&gt;% 
+    summarize(mean_diff = diff(ftamtmeans))</code></pre>
+<pre><code>## # A tibble: 1 x 1
+##   mean_diff
+##       &lt;dbl&gt;
+## 1    -1218.</code></pre>
+<pre class="r"><code># Mean Difference
+ftrand &lt;- vector()
+for (i in 1:5000) {
+    new &lt;- data.frame(ftgrantamtmedian = sample(FinAid$ftgrantamtmedian), 
+        Condition = FinAid$cond)
+    ftrand[i] &lt;- mean(new[new$Condition == &quot;1&quot;, ]$ftgrantamtmedian) - 
+        mean(new[new$Condition == &quot;0&quot;, ]$ftgrantamtmedian)
+}
+
+mean(ftrand &lt; -1218.041 | ftrand &gt; 1218.041)</code></pre>
+<pre><code>## [1] 0.0312</code></pre>
+<p>H0:Mean difference ftgrantamtmedian is 0 for schools with conditinal scholarships and schools with non-conditional scholarships.<br />
+HA:Mean ftgrantamtmedian is different for schools with conditinal scholarships and schools with non-conditional scholarships.<br />
+The mean difference test confirmed with its p-value of 0.0306 that we should reject the null hypothesis in favor of the alternate hypothesis that the median amount that schools with conditional and schools with non-conditional scholarships are offering are different.</p>
+<pre class="r"><code>{
+    hist(ftrand, main = &quot;Mean Differences in Scholarship Medians&quot;, 
+        ylab = &quot;Frequencies&quot;)
+    abline(v = c(-1208.041, 1208.041), col = &quot;red&quot;)
+}</code></pre>
+<p><img src="../Project2FA_files/figure-html/unnamed-chunk-7-1.png" width="768" style="display: block; margin: auto;" /></p>
+</div>
+<div id="linear-regression" class="section level2">
+<h2>(3)Linear Regression</h2>
+<pre class="r"><code>library(glmnet)
+FinAid$ftrec_c &lt;- FinAid$ftrecvgrant - mean(FinAid$ftrecvgrant)
+FinAid$ftmed_c &lt;- FinAid$ftgrantamtmedian - mean(FinAid$ftgrantamtmedian)
+FNfit &lt;- lm(ftmed_c ~ ftrec_c * cond, data = FinAid)
+summary(FNfit)</code></pre>
+<pre><code>## 
+## Call:
+## lm(formula = ftmed_c ~ ftrec_c * cond, data = FinAid)
+## 
+## Residuals:
+##    Min     1Q Median     3Q    Max 
+## -16348  -6379   -480   4988  34770 
+## 
+## Coefficients:
+##              Estimate Std. Error t value Pr(&gt;|t|)    
+## (Intercept)   -29.853    357.542  -0.083    0.933    
+## ftrec_c        18.444      1.716  10.746   &lt;2e-16 ***
+## cond          117.855    526.381   0.224    0.823    
+## ftrec_c:cond    1.462      2.893   0.505    0.613    
+## ---
+## Signif. codes:  0 &#39;***&#39; 0.001 &#39;**&#39; 0.01 &#39;*&#39; 0.05 &#39;.&#39; 0.1 &#39; &#39; 1
+## 
+## Residual standard error: 8199 on 1009 degrees of freedom
+## Multiple R-squared:  0.1613, Adjusted R-squared:  0.1588 
+## F-statistic:  64.7 on 3 and 1009 DF,  p-value: &lt; 2.2e-16</code></pre>
+<p>The predicted median amount for a non-conditional scholarship with an average number of students receiving aid is -29.853. When controlling for condition, every one unit increase in students receiving aid, there is a 18.444 increase in median scholarship amount. Schools with conditional scholarships with averge numbers of students receiving aid have predicted median aid amounts 117.855 greater than schools with non-conditional scholarships with average amounts of students receiving aid. The slope of students receiving aid on median aid amounts is 1.462 greater for conditional scholarships than non-conditional scholarships.</p>
+<pre class="r"><code># Proportion
+summary(FNfit)</code></pre>
+<pre><code>## 
+## Call:
+## lm(formula = ftmed_c ~ ftrec_c * cond, data = FinAid)
+## 
+## Residuals:
+##    Min     1Q Median     3Q    Max 
+## -16348  -6379   -480   4988  34770 
+## 
+## Coefficients:
+##              Estimate Std. Error t value Pr(&gt;|t|)    
+## (Intercept)   -29.853    357.542  -0.083    0.933    
+## ftrec_c        18.444      1.716  10.746   &lt;2e-16 ***
+## cond          117.855    526.381   0.224    0.823    
+## ftrec_c:cond    1.462      2.893   0.505    0.613    
+## ---
+## Signif. codes:  0 &#39;***&#39; 0.001 &#39;**&#39; 0.01 &#39;*&#39; 0.05 &#39;.&#39; 0.1 &#39; &#39; 1
+## 
+## Residual standard error: 8199 on 1009 degrees of freedom
+## Multiple R-squared:  0.1613, Adjusted R-squared:  0.1588 
+## F-statistic:  64.7 on 3 and 1009 DF,  p-value: &lt; 2.2e-16</code></pre>
+<pre class="r"><code># Regression Plot
+x &lt;- scale(FinAid$ftrec_c)
+y &lt;- scale(FinAid$ftmed_c)
+ggplot(data.frame(x, y), aes(x, y)) + geom_point() + geom_smooth(method = &quot;lm&quot;, 
+    se = F)</code></pre>
+<p><img src="../Project2FA_files/figure-html/unnamed-chunk-9-1.png" width="768" style="display: block; margin: auto;" /></p>
+<pre class="r"><code># Assumptions Linearity
+FN_samp2 &lt;- FinAid %&gt;% sample_n(1000)
+FNresids2 &lt;- lm(ftmed_c ~ ftrec_c * cond, data = FN_samp2)$residuals
+FNfitted2 &lt;- lm(ftmed_c ~ ftrec_c * cond, data = FN_samp2)$fitted.values
+ggplot() + geom_point(aes(FNfitted2, FNresids2)) + geom_hline(yintercept = 0, 
+    color = &quot;red&quot;) + labs(title = &quot;Fitted Values and Residuals of 1000&quot;, 
+    x = &quot;Fitted Values&quot;, y = &quot; Residuals&quot;) + theme(plot.title = element_text(hjust = 0.5))</code></pre>
+<p><img src="../Project2FA_files/figure-html/unnamed-chunk-9-2.png" width="768" style="display: block; margin: auto;" /></p>
+<pre class="r"><code># Formal Test of Normality Ho:true distribution is normal.
+FNresids &lt;- FNfit$residuals
+ks.test(FNresids, &quot;pnorm&quot;, mean = 0, sd(FNresids))  #pvalue=0.0272 </code></pre>
+<pre><code>## 
+##  One-sample Kolmogorov-Smirnov test
+## 
+## data:  FNresids
+## D = 0.046058, p-value = 0.0272
+## alternative hypothesis: two-sided</code></pre>
+<pre class="r"><code># Homoskedasticity
+bptest(FNfit)  #pvalue=0.5575 </code></pre>
+<pre><code>## 
+##  studentized Breusch-Pagan test
+## 
+## data:  FNfit
+## BP = 2.0726, df = 3, p-value = 0.5575</code></pre>
+<p>The linear plot does not look as though it satisfies the normality assumption as the points flare out and the residuals are increasingly positive. The multiple R-squared value indicates that 0.1613 of variation in ftmed_c is explained by the overall model.<br />
+The Kolmogorov-Smirnov test calculated a p-value of 0.0272 indicating that the null hypothesis of normal distribution must be rejected. The Breusch-Pagan test for homoskedasticity returned a p-value of 0.5575 showing that the data has equal variances.</p>
+<pre class="r"><code># uncorrected
+summary(FNfit)$coef[, 1:2]</code></pre>
+<pre><code>##                Estimate Std. Error
+## (Intercept)  -29.853034 357.541753
+## ftrec_c       18.444322   1.716320
+## cond         117.854749 526.381077
+## ftrec_c:cond   1.461788   2.893053</code></pre>
+<pre class="r"><code># corrected SE
+coeftest(FNfit, vcov = vcovHC(FNfit))[, 1:2]</code></pre>
+<pre><code>##                Estimate Std. Error
+## (Intercept)  -29.853034 361.764425
+## ftrec_c       18.444322   1.800147
+## cond         117.854749 535.603483
+## ftrec_c:cond   1.461788   2.953199</code></pre>
+<p>After correcting for robust standard errors, the coefficients remained the same but each of the standard errors increased.</p>
+</div>
+<div id="bootstrapped-standard-errors" class="section level2">
+<h2>(4)Bootstrapped Standard Errors</h2>
+<pre class="r"><code>bootdat &lt;- sample_frac(FinAid, replace = T)
+samp_dist &lt;- replicate(5000, {
+    bootdat &lt;- sample_frac(FinAid, replace = T)
+    fita &lt;- lm(ftmed_c ~ ftrec_c * cond, data = bootdat)
+    coef(fita)
+})
+samp_dist %&gt;% t %&gt;% as.data.frame %&gt;% summarize_all(sd)</code></pre>
+<pre><code>##   (Intercept)  ftrec_c     cond ftrec_c:cond
+## 1    362.2446 1.793315 538.9477     2.966568</code></pre>
+<p>In this model, the intercept is lower than both uncorrected and corrected coeftests. The standard errors for ftrec_c is between the two previous values and the SEs for and ftrec:cond interaction and condition are greater than both previous values.</p>
+</div>
+<div id="logistic-regression" class="section level2">
+<h2>(5)Logistic Regression</h2>
+<pre class="r"><code>LR &lt;- glm(cond ~ year + numstudents, data = FinAid, family = &quot;binomial&quot;)
+FinAid$year &lt;- factor(FinAid$academicyear, labels = c(&quot;2014&quot;, 
+    &quot;2015&quot;, &quot;2016&quot;, &quot;2017&quot;, &quot;2018&quot;))
+summary(LR)</code></pre>
+<pre><code>## 
+## Call:
+## glm(formula = cond ~ year + numstudents, family = &quot;binomial&quot;, 
+##     data = FinAid)
+## 
+## Deviance Residuals: 
+##     Min       1Q   Median       3Q      Max  
+## -1.4215  -1.0999  -0.9769   1.2428   1.4638  
+## 
+## Coefficients:
+##               Estimate Std. Error z value Pr(&gt;|z|)   
+## (Intercept)  0.6065368  0.1930752   3.141  0.00168 **
+## year2015    -0.5216556  0.2006931  -2.599  0.00934 **
+## year2016    -0.5698469  0.2015225  -2.828  0.00469 **
+## year2017    -0.6073097  0.2017176  -3.011  0.00261 **
+## year2018    -0.6158473  0.2024510  -3.042  0.00235 **
+## numstudents -0.0004883  0.0002201  -2.218  0.02654 * 
+## ---
+## Signif. codes:  0 &#39;***&#39; 0.001 &#39;**&#39; 0.01 &#39;*&#39; 0.05 &#39;.&#39; 0.1 &#39; &#39; 1
+## 
+## (Dispersion parameter for binomial family taken to be 1)
+## 
+##     Null deviance: 1400.1  on 1012  degrees of freedom
+## Residual deviance: 1382.3  on 1007  degrees of freedom
+## AIC: 1394.3
+## 
+## Number of Fisher Scoring iterations: 4</code></pre>
+<pre class="r"><code>exp(coef(LR))</code></pre>
+<pre><code>## (Intercept)    year2015    year2016    year2017    year2018 numstudents 
+##   1.8340687   0.5935371   0.5656120   0.5448146   0.5401830   0.9995118</code></pre>
+<pre class="r"><code>table(FinAid$cond, FinAid$year)</code></pre>
+<pre><code>##    
+##     2014 2015 2016 2017 2018
+##   0   85  112  113  115  114
+##   1  117   93   90   88   86</code></pre>
+<p>The odds of an 2014 applicant getting a non-conditional scholarship with 0 other applicants to consider is 1.8341. Controlling for the number of students, the odds of a 2015 applicant receiving a conditional scholarship was 0.5935 times the admission for a 2014 applicant. Controlling for number of academic year, every one unit in number of students increases odds of a conditional scholarship by 0.9995.</p>
+<pre class="r"><code>FNprob &lt;- predict(LR, type = &quot;response&quot;)
+FNpred &lt;- ifelse(FNprob &gt; 0.5, 1, 0)
+table(prediction = FNpred, truth = FinAid$condscholind) %&gt;% addmargins</code></pre>
+<pre><code>##           truth
+## prediction         N    Y  Sum
+##        0      0  456  357  813
+##        1      0   83  117  200
+##        Sum    0  539  474 1013</code></pre>
+<pre class="r"><code>class_diag(FNprob, FinAid$cond)</code></pre>
+<pre><code>##         acc      sens      spec   ppv       auc
+## 1 0.5656466 0.2468354 0.8460111 0.585 0.5618136</code></pre>
+<pre class="r"><code>FinAid$logit &lt;- predict(LR, type = &quot;link&quot;)
+
+FinAid %&gt;% ggplot() + geom_density(aes(logit, color = condscholind, 
+    fill = condscholind, alpha = 0.5)) + geom_vline(xintercept = 0) + 
+    labs(title = &quot;Density Plot of Logit Grouped by Scholarship Classification&quot;, 
+        x = &quot;Logit&quot;, y = &quot;Density&quot;) + theme(plot.title = element_text(hjust = 0.5))</code></pre>
+<p><img src="../Project2FA_files/figure-html/unnamed-chunk-15-1.png" width="768" style="display: block; margin: auto;" /></p>
+<pre class="r"><code># ROC curve
+library(plotROC)
+FNROC &lt;- ggplot(FinAid) + geom_roc(aes(d = cond, m = FNprob), 
+    n.cuts = 0)
+FNROC</code></pre>
+<p><img src="../Project2FA_files/figure-html/unnamed-chunk-16-1.png" width="768" style="display: block; margin: auto;" /></p>
+<pre class="r"><code>calc_auc(FNROC)</code></pre>
+<pre><code>##   PANEL group       AUC
+## 1     1    -1 0.5618136</code></pre>
+<p>The AUC value of 0.5618 indicates that year and number of students are bad indicators of scholarship classification.</p>
+</div>
+<div id="more-logistic-regression" class="section level2">
+<h2>(6)More Logistic Regression</h2>
+<pre class="r"><code>FinAid2 &lt;- FinAid %&gt;% select(-logit, -schoolname, -academicyear, 
+    -ftgrantamt25, -ftgrantamt75, -condscholind, -ftmed_c, -ftrec_c)
+FNfit2 &lt;- glm(cond ~ (.), data = FinAid2, family = &quot;binomial&quot;)
+FNprob2 &lt;- predict(FNfit2, type = &quot;response&quot;)
+class_diag(FNprob2, FinAid2$cond)</code></pre>
+<pre><code>##         acc      sens      spec       ppv       auc
+## 1 0.6130306 0.4767932 0.7328386 0.6108108 0.6785499</code></pre>
+<p>For this logistic regression model using all variables and their interactions, the AUC of 0.6785 shows that this model is poor at predicting scholarship status.<br />
+The accuracy of correctly classified scholarships is 0.6130, its sensitivity to correctly classified conditional scholarships is 0.4768, its specificity to correctly classified non-conditional scholarships is 0.7328, and its PPV of scholarships classified as conditional actually conditional is 0.6108.</p>
+<pre class="r"><code># 10-fold CV
+k = 10
+FinAid2data &lt;- FinAid2[sample(nrow(FinAid2)), ]
+folds &lt;- cut(seq(1:nrow(FinAid2)), breaks = k, labels = F)
+diags &lt;- NULL
+for (i in 1:k) {
+    train &lt;- FinAid2data[folds != i, ]
+    test &lt;- FinAid2data[folds == i, ]
+    
+    truth &lt;- test$cond
+    
+    fit &lt;- glm(cond ~ (.)^2, data = train, family = &quot;binomial&quot;)
+    
+    probs &lt;- predict(fit, newdata = test, type = &quot;response&quot;)
+    
+    diags &lt;- rbind(diags, class_diag(probs, truth))
+}
+summarize_all(diags, mean)</code></pre>
+<pre><code>##         acc      sens      spec       ppv       auc
+## 1 0.6533683 0.6295019 0.6727117 0.6295586 0.7234872</code></pre>
+<p>For the 10-fold CV of the same logistic regression model, the AUC increases slightly to 0.7271 which makes it a fair predictor of scholarships status. Accuracy, sensitivity, and PPV have also increased, but specificity has decreased.</p>
+<pre class="r"><code># LASSO
+y &lt;- as.matrix(FinAid2$cond)
+x &lt;- model.matrix(cond ~ ., data = FinAid2)[, -1]
+x &lt;- scale(x)
+cv &lt;- cv.glmnet(x, y, family = &quot;binomial&quot;)
+Lasso &lt;- glmnet(x, y, family = &quot;binomial&quot;, lambda = cv$lambda.1se)
+coef(Lasso)</code></pre>
+<pre><code>## 11 x 1 sparse Matrix of class &quot;dgCMatrix&quot;
+##                          s0
+## (Intercept)      -0.1298534
+## ftnumstudents     .        
+## numstudents       .        
+## ftrecvgrant      -0.1440023
+## totalrecvgrant    .        
+## totalrecvgrantp  -0.1387188
+## ftgrantamtmedian  .        
+## year2015          .        
+## year2016          .        
+## year2017          .        
+## year2018          .</code></pre>
+<p>The LASSO showed that the ftnumstudents, ftrecvgrant, and totalrecvgrantp were predictive of scholarship status.</p>
+<pre class="r"><code>set.seed(348)
+k = 10
+FinAid3data &lt;- FinAid2[sample(nrow(FinAid2)), ]
+folds &lt;- cut(seq(1:nrow(FinAid2)), breaks = k, labels = F)
+diags &lt;- NULL
+for (i in 1:k) {
+    train &lt;- FinAid3data[folds != i, ]
+    test &lt;- FinAid3data[folds == i, ]
+    truth &lt;- test$cond
+    FinAid3fit &lt;- glm(cond ~ ftnumstudents + ftrecvgrant + totalrecvgrantp, 
+        data = train, family = binomial)
+    
+    probs3 &lt;- predict(FinAid3fit, newdata = test, type = &quot;response&quot;)
+    diags &lt;- rbind(diags, class_diag(probs3, truth))
+}
+summarize_all(diags, mean)</code></pre>
+<pre><code>##         acc      sens      spec      ppv       auc
+## 1 0.6002233 0.4433786 0.7438282 0.605515 0.6659992</code></pre>
+<p>The performance of this test was worse and returned the AUC back down to a poor predictor with a value of 0.6660.</p>
+<p>Note that the <code>echo = FALSE</code> parameter was added to the code chunk to prevent printing of the R code that generated the plot.</p>
+</div>
+
+            
+        <hr>         <div class="related-posts">
+                <h5>Related Posts</h5>
+                
+              </div> 
+            </div>
+          </div>
+
+   <hr>  <div class="disqus">
+  <div id="disqus_thread"></div>
+  <script type="text/javascript">
+
+    (function() {
+      
+      
+      if (window.location.hostname == "localhost")
+        return;
+
+      var disqus_shortname = '';
+      var dsq = document.createElement('script'); dsq.type = 'text/javascript'; dsq.async = true;
+      dsq.src = '//' + disqus_shortname + '.disqus.com/embed.js';
+      (document.getElementsByTagName('head')[0] || document.getElementsByTagName('body')[0]).appendChild(dsq);
+    })();
+  </script>
+  <noscript>Please enable JavaScript to view the <a href="http://disqus.com/?ref_noscript">comments powered by Disqus.</a></noscript>
+  <a href="http://disqus.com/" class="dsq-brlink">comments powered by <span class="logo-disqus">Disqus</span></a>
+</div> 
+        </div>
+      </div>
+    </div>
+
+    
+    <footer>
+  <div id="footer">
+    <div class="container">
+      <p class="text-muted">&copy; All rights reserved. Powered by <a href="https://gohugo.io/">Hugo</a> and
+      <a href="http://www.github.com/nurlansu/hugo-sustain/">sustain</a> with ♥</p>
+    </div>
+  </div>
+</footer>
+<div class="footer"></div>
+
+
+<script src="https://ajax.googleapis.com/ajax/libs/jquery/1.11.3/jquery.min.js"></script>
+
+<script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/js/bootstrap.min.js" integrity="sha384-Tc5IQib027qvyjSMfHjOMaLkfuWVxZxUPnCJA7l2mCWNIpG9mGCD8wGNIcPD7Txa" crossorigin="anonymous"></script>
+<script src="../js/docs.min.js"></script>
+<script src="../js/main.js"></script>
+
+<script src="../js/ie10-viewport-bug-workaround.js"></script>
+
+
+    
+  </body>
+</html>

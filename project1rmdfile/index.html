@@ -1,0 +1,389 @@
+<!DOCTYPE html>
+<html lang="en-US">
+  <head>
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="author" content="Nina Reed" />
+    
+    <link rel="shortcut icon" type="image/x-icon" href="../img/favicon.ico">
+    <title>Project 1: Explanantory Data Analysis</title>
+    <meta name="generator" content="Hugo 0.83.1" />
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css" integrity="sha384-BVYiiSIFeK1dGmJRAkycuHAHRg32OmUcww7on3RYdg4Va+PmSTsz/K68vbdEjh4u" crossorigin="anonymous">
+    <link rel="stylesheet" type="text/css" href="../css/main.css" />
+    <link rel="stylesheet" type="text/css" href="https://maxcdn.bootstrapcdn.com/font-awesome/4.7.0/css/font-awesome.min.css" />
+    <link rel="stylesheet" type="text/css" href="https://fonts.googleapis.com/css?family=Source+Sans+Pro:200,400,200bold,400old" />
+    
+    <!--[if lt IE 9]>
+			<script src="https://oss.maxcdn.com/libs/html5shiv/3.7.0/html5shiv.js"></script>
+			<script src="https://oss.maxcdn.com/libs/respond.js/1.4.2/respond.min.js"></script>
+		<![endif]-->
+
+    
+  </head>
+
+  <body>
+    <div id="wrap">
+      
+      <nav class="navbar navbar-default">
+  <div class="container">
+    <div class="navbar-header">
+      <a class="navbar-brand" href="../"><i class="fa fa-home"></i></a>
+      <button type="button" class="navbar-toggle" data-toggle="collapse" data-target="#navbar">
+        <span class="icon-bar"></span>
+        <span class="icon-bar"></span>
+        <span class="icon-bar"></span>
+      </button>
+    </div>
+    <div class="navbar-collapse collapse" id="navbar">
+      <ul class="nav navbar-nav navbar-right">
+      
+        
+        <li><a href="../post/">BLOG</a></li>
+        
+        <li><a href="../projects/">PROJECTS</a></li>
+        
+        <li><a href="../resume/">RESUME</a></li>
+        
+      
+      </ul>
+    </div>
+  </div>
+</nav>
+
+      <div class="container">
+        <div class="blog-post">
+          <h3>
+            <strong><a href="../project1rmdfile/">Project 1: Explanantory Data Analysis</a></strong>
+          </h3>
+        </div>
+ 
+<div class="blog-title">
+          <h4>
+         January 1, 0001 
+            &nbsp;&nbsp;
+            
+          </h4>
+        </div>
+
+        <div class="panel panel-default">
+          <div class="panel-body">
+            <div class="blogpost">
+              
+
+
+<pre class="r"><code>knitr::opts_chunk$set(echo = TRUE, eval = TRUE, fig.align = &quot;center&quot;, warning = F, message = F,
+tidy=TRUE, tidy.opts=list(width.cutoff=60), R.options=list(max.print=100))</code></pre>
+<div id="r-markdown" class="section level2">
+<h2>R Markdown</h2>
+<p>I became intersted in using these datasets because my roommate and I have started watching the show Survivor this semester. It is far more complex of a show that I remember from my child hood and is largely based on strategy. Much of this strategy is social and involves personal characteristics of the players. Strategy is also important and is dependent on winning challenges or idols. These datasets cover these two factors and I hoped to find them interesting.
+## Joining</p>
+<pre class="r"><code>library(tidyverse)</code></pre>
+<pre><code>## ── Attaching packages ─────────────────────────────────────── tidyverse 1.3.0 ──</code></pre>
+<pre><code>## ✓ ggplot2 3.3.3     ✓ purrr   0.3.4
+## ✓ tibble  3.0.4     ✓ dplyr   1.0.4
+## ✓ tidyr   1.1.2     ✓ stringr 1.4.0
+## ✓ readr   1.4.0     ✓ forcats 0.5.0</code></pre>
+<pre><code>## ── Conflicts ────────────────────────────────────────── tidyverse_conflicts() ──
+## x dplyr::filter() masks stats::filter()
+## x dplyr::lag()    masks stats::lag()</code></pre>
+<pre class="r"><code>library(tibble)
+idols &lt;- read.csv(&quot;Survivor idols found.csv&quot;)
+
+Castaways &lt;- read.csv(&quot;castaways.csv&quot;) %&gt;% select(-1)
+
+survivor &lt;- inner_join(Castaways, idols, by=c(&quot;full_name&quot;=&quot;Contestant&quot;))
+glimpse(survivor)</code></pre>
+<pre><code>## Rows: 124
+## Columns: 29
+## $ season_name          &lt;fct&gt; Survivor: Winners at War, Survivor: Winners at W…
+## $ season               &lt;int&gt; 40, 40, 40, 40, 40, 40, 40, 40, 40, 40, 40, 39, …
+## $ full_name            &lt;fct&gt; Natalie Anderson, Rob Mariano, Parvati Shallow, …
+## $ castaway             &lt;fct&gt; Natalie, Rob, Parvati, Yul, Wendell, Sophie, Nic…
+## $ age                  &lt;int&gt; 33, 43, 36, 44, 35, 29, 28, 48, 36, 33, 45, 27, …
+## $ city                 &lt;fct&gt; Edgewater, Pensacola, Los Angeles, Los Altos, Ph…
+## $ state                &lt;fct&gt; New Jersey, Florida, California, California, Pen…
+## $ personality_type     &lt;fct&gt; ESTP, ESTJ, ENFJ, INTJ, INFJ, INTJ, ENTP, INFJ, …
+## $ day                  &lt;int&gt; 2, 14, 16, 18, 21, 28, 34, 36, 37, 39, 39, 8, 11…
+## $ order                &lt;int&gt; 1, 6, 7, 9, 10, 13, 16, 17, 18, 21, 22, 3, 4, 9,…
+## $ result               &lt;fct&gt; 1st voted out, 6th voted out, 7th voted out, 9th…
+## $ jury_status          &lt;fct&gt; NA, 4th jury member, 5th jury member, 6th jury m…
+## $ original_tribe       &lt;fct&gt; Sele, Sele, Sele, Dakal, Dakal, Dakal, Dakal, Se…
+## $ merged_tribe         &lt;fct&gt; NA, NA, NA, NA, Koru, Koru, Koru, Koru, Koru, Ko…
+## $ swapped_tribe        &lt;fct&gt; NA, Yara, Sele, Sele, Sele, Yara, Sele, Dakal, Y…
+## $ swapped_tribe2       &lt;fct&gt; NA, NA, NA, NA, NA, NA, NA, NA, NA, NA, NA, NA, …
+## $ total_votes_received &lt;int&gt; 11, 4, 8, 3, 14, 6, 8, 18, 7, 11, 0, 7, 6, 6, 22…
+## $ immunity_idols_won   &lt;int&gt; 1, 0, 0, 0, 0, 0, 1, 2, 0, 1, 4, 0, 0, 0, 0, 1, …
+## $ M.                   &lt;int&gt; NA, 1, NA, 1, 1, NA, 1, NA, 1, NA, 1, 1, NA, 1, …
+## $ F.                   &lt;int&gt; 1, NA, 1, NA, NA, 1, NA, NA, NA, 1, NA, NA, 1, N…
+## $ found                &lt;fct&gt; 1, 1, 1, 1, 1, 1, 1, 0, 1, 1, 1, 1, 1, 1, 1, 1, …
+## $ held                 &lt;dbl&gt; 1, 1, 1, 1, 1, 1, 1, 0, 1, 1, 1, 1, 1, 1, 1, 1, …
+## $ played               &lt;int&gt; 1, 1, 0, 0, 1, NA, 1, 0, 1, 1, 1, 0, 0, 1, 1, 1,…
+## $ Votes.voided         &lt;fct&gt; 3, 1, 0, 0, 1, , 0, 0, 2, 3, 0, 0, 0, 0, 7, 0, 0…
+## $ Boot.avoided         &lt;int&gt; 1, NA, NA, NA, NA, NA, NA, NA, 1, 1, 0, 0, 0, 0,…
+## $ Tie.avoided          &lt;int&gt; NA, NA, NA, NA, NA, NA, NA, NA, NA, NA, NA, NA, …
+## $ Day.found            &lt;int&gt; 25, 10, NA, NA, 18, 12, 26, NA, 29, 25, 28, 7, 4…
+## $ Day.played           &lt;dbl&gt; 37, 37, NA, NA, 37, NA, 35, NA, 36, 37, 36, NA, …
+## $ Notes                &lt;fct&gt; &quot;Natalie played her idol for Jaclyn, meaning Bay…</code></pre>
+<p>The first dataset contains all relevant information on all survivor contestants with 744 observations. The second data set is limited to the contestants who have either found or held an immunity idol with 159 observations. I have combined these two to drop entries for players who have never found/held an idol. The first dataset was obtained from someone on R. It contains season names and numbers, survivor full names, age, city/state, personality type, game result, original and merged tribes, total votes received, and number of immunity idols won.<br />
+The second dataset was compiled by a what seems to be a huge survivor fan who ran a webpage on survivor contestant stats. It contains contestant names, number of hidden idols found and held, votes voided, day idol was found and played, and notes on individual players.<br />
+An inner join was used to match the contestant names from the survivors who obtained idols and from overall contestants.</p>
+<pre class="r"><code>SF &lt;- survivor %&gt;% filter(immunity_idols_won&gt;1) %&gt;% arrange(desc(age)) %&gt;% mutate(days_held = Day.played - Day.found)
+survivor2 &lt;- survivor %&gt;% mutate(days_held = Day.played - Day.found) %&gt;% select(-Notes)</code></pre>
+</div>
+<div id="wrangling" class="section level2">
+<h2>Wrangling</h2>
+<pre class="r"><code>survivor %&gt;% summarize_if(is.numeric, mean)</code></pre>
+<pre><code>##     season      age      day    order total_votes_received immunity_idols_won
+## 1 26.35484 33.27419 29.92742 12.98387             7.282258          0.9032258
+##   M. F.      held played Boot.avoided Tie.avoided Day.found Day.played
+## 1 NA NA 0.9758065     NA           NA          NA        NA         NA</code></pre>
+<pre class="r"><code>survivor %&gt;% summarize_if(is.numeric, sd)</code></pre>
+<pre><code>##     season      age      day    order total_votes_received immunity_idols_won
+## 1 9.961057 9.237902 10.44939 5.204726             4.780653           1.296771
+##   M. F.      held played Boot.avoided Tie.avoided Day.found Day.played
+## 1 NA NA 0.3241928     NA           NA          NA        NA         NA</code></pre>
+<p>The mean age of survivor contestants is 33.27 years, the mean total number of votes received is 7.28 votes for these contestants that found hidden immunity idols, and the mean number of immunity idols won is 0.90. The mean day that hidden immunity idols are found is on day 29.93 and the mean number of days these hidden immunity idols are held is 0.98 days.
+The standard deviation of age if 9.24 years, 4.78 sd for total votes received and 1.30 for the number of immunity idols won. The standard deviation for day found is 10.45 days and 0.32 for number of days held.</p>
+<pre class="r"><code>survivor %&gt;%  summarize(mean(immunity_idols_won),sd(immunity_idols_won), var(immunity_idols_won), min(immunity_idols_won), max(immunity_idols_won))%&gt;% pivot_longer(1:5, names_to=&quot;stats&quot;, values_to=&quot;values&quot;)</code></pre>
+<pre><code>## # A tibble: 5 x 2
+##   stats                    values
+##   &lt;chr&gt;                     &lt;dbl&gt;
+## 1 mean(immunity_idols_won)  0.903
+## 2 sd(immunity_idols_won)    1.30 
+## 3 var(immunity_idols_won)   1.68 
+## 4 min(immunity_idols_won)   0    
+## 5 max(immunity_idols_won)   5</code></pre>
+</div>
+<div id="visualization" class="section level2">
+<h2>Visualization</h2>
+<pre class="r"><code>survivor %&gt;% summarize(cor(immunity_idols_won, total_votes_received, use=&quot;pair&quot;))</code></pre>
+<pre><code>##   cor(immunity_idols_won, total_votes_received, use = &quot;pair&quot;)
+## 1                                                  -0.1503065</code></pre>
+<pre class="r"><code>cormat &lt;- survivor %&gt;% select_if(is.numeric) %&gt;% cor(use=&quot;pair&quot;)</code></pre>
+<pre><code>## Warning in cor(., use = &quot;pair&quot;): the standard deviation is zero</code></pre>
+<pre class="r"><code>cormat %&gt;% as.data.frame() %&gt;% rownames_to_column(&quot;var1&quot;) %&gt;% pivot_longer(-1, names_to=&quot;var2&quot;, values_to=&quot;correlation&quot;)</code></pre>
+<pre><code>## # A tibble: 196 x 3
+##    var1   var2                 correlation
+##    &lt;chr&gt;  &lt;chr&gt;                      &lt;dbl&gt;
+##  1 season season                   1      
+##  2 season age                      0.0805 
+##  3 season day                     -0.0916 
+##  4 season order                    0.00435
+##  5 season total_votes_received     0.155  
+##  6 season immunity_idols_won      -0.0477 
+##  7 season M.                      NA      
+##  8 season F.                      NA      
+##  9 season held                     0.0253 
+## 10 season played                   0.159  
+## # … with 186 more rows</code></pre>
+<pre class="r"><code>tidycor &lt;- cormat %&gt;% as.data.frame() %&gt;% rownames_to_column(&quot;var1&quot;) %&gt;% pivot_longer(-1, names_to=&quot;var2&quot;, values_to=&quot;correlation&quot;)
+
+tidycor %&gt;% ggplot(aes(var1, var2, fill=correlation))+geom_tile()+scale_fill_gradient2()+theme(axis.text.x = element_text(angle = 60, hjust=1))+ggtitle(&quot;Correlation Heat Map of Survivor Numeric Variables&quot;) + geom_text(aes(label=round(correlation, 2)), color=&quot;black&quot;, size =2)</code></pre>
+<pre><code>## Warning: Removed 81 rows containing missing values (geom_text).</code></pre>
+<p><img src="../Project1Rmdfile_files/figure-html/unnamed-chunk-6-1.png" width="672" />
+The highest correlation value of two different numeric variables was calculated to be 0.96 between “day” and “order.” This makes sense because finding a hidden immunity idol at a later day corresponds with the order in which they are found. The lowest correlation value is between “season” and “boot.avoided.” This shows that the the number of times a player has avoided being booted has not been impacted by the season number.</p>
+<pre class="r"><code>library(RColorBrewer)
+nb.cols &lt;- 16
+mycolors &lt;- colorRampPalette(brewer.pal(6, &quot;Set2&quot;))(nb.cols)
+
+survivor %&gt;% ggplot(aes(season, Votes.voided, color=immunity_idols_won))+ geom_point(size=1)+ scale_fill_manual(values=mycolors)+ggtitle(&quot;Scatterplot of Immunity Idol Wins vs Total Votes Received Faceted by Personality Type&quot;)+facet_wrap(~immunity_idols_won)</code></pre>
+<p><img src="../Project1Rmdfile_files/figure-html/unnamed-chunk-7-1.png" width="672" />
+These plots faceted by number of immunity idol wins do not show much of a positive or negative relationship at all between the number of votes voided and season number. The only relationship shown is tht there seem to be a higher number of immunity idol wins in the later seasons. However, those who won fewer immunity idols seem to be voiding more votes, likely by the use of an alternative hidden immunity idol.</p>
+<pre class="r"><code>Meanage &lt;- survivor %&gt;% group_by(personality_type) %&gt;% summarize(meanage = mean(age), meanvotes= mean(total_votes_received)) %&gt;% mutate(meanage = round(meanage,2))
+
+survivor %&gt;% ggplot(aes(personality_type, total_votes_received, fill= personality_type))+geom_bar(stat=&quot;summary&quot;, fun=mean, position=&quot;dodge&quot;)+scale_fill_manual(values = mycolors)+theme(axis.text.x = element_text(angle = 90, hjust=1),legend.position = &quot;none&quot;, plot.title = element_text(hjust = 1)) + geom_text(data=Meanage, aes(y=meanvotes, label=meanage),vjust=1, size=3) + ggtitle(&quot;Total Votes Received by Personality Type and Mean Age&quot;)+labs(x=&quot;Personality Type&quot;, y=&quot;Total Votes Received&quot;)</code></pre>
+<p><img src="../Project1Rmdfile_files/figure-html/unnamed-chunk-8-1.png" width="672" />
+This plot shows that the INFP personality type received the greatest average total votes received compared to other personality types. The average age for each personality type does seem to be indicative of the average total votes received. The higher the average age, the greater the total votes received. As Survivor is also largely a social game, both age and personality type may have an influence on likeability of players and therefore the number of votes they receive to be voted off.</p>
+</div>
+<div id="pam-clustering" class="section level2">
+<h2>PAM Clustering</h2>
+<pre class="r"><code>library(cluster)
+SurNV &lt;- survivor2 %&gt;% select(total_votes_received, age, days_held, Votes.voided, immunity_idols_won) %&gt;% na.omit() 
+glimpse(SurNV)</code></pre>
+<pre><code>## Rows: 49
+## Columns: 5
+## $ total_votes_received &lt;int&gt; 11, 4, 14, 8, 7, 11, 0, 6, 22, 8, 1, 9, 11, 9, 1…
+## $ age                  &lt;int&gt; 33, 43, 35, 28, 36, 33, 45, 33, 37, 41, 28, 25, …
+## $ days_held            &lt;dbl&gt; 12, 27, 19, 9, 7, 12, 8, 10, 5, 1, 0, 2, 32, 2, …
+## $ Votes.voided         &lt;fct&gt; 3, 1, 1, 0, 2, 3, 0, 0, 7, 0, 0, 3, 1, 3, 5, 0, …
+## $ immunity_idols_won   &lt;int&gt; 1, 0, 0, 1, 0, 1, 4, 0, 0, 1, 1, 1, 0, 1, 1, 0, …</code></pre>
+<pre class="r"><code>SurNVsil &lt;- vector()
+
+kmeans1 &lt;- SurNV %&gt;% kmeans(3)
+kmeans1 </code></pre>
+<pre><code>## K-means clustering with 3 clusters of sizes 26, 12, 11
+## 
+## Cluster means:
+##   total_votes_received      age days_held Votes.voided immunity_idols_won
+## 1             8.000000 31.96154  6.423077     1.884615          1.0384615
+## 2             9.333333 48.83333 15.833333     3.166667          0.9166667
+## 3             7.454545 31.54545 24.000000     1.454545          1.3636364
+## 
+## Clustering vector:
+##   1   2   5   7   9  10  11  14  15  16  17  20  23  24  25  26  27  29  30  32 
+##   1   3   3   1   1   1   2   1   1   1   1   1   3   1   1   1   1   1   3   2 
+##  34  35  47  48  50  51  52  53  56  57  59  60  61  67  68  74  77  78  81  86 
+##   1   1   3   2   1   1   2   1   2   1   1   1   1   2   3   3   2   2   3   1 
+##  88  99 100 111 112 113 119 121 122 
+##   3   2   2   2   1   2   1   3   3 
+## 
+## Within cluster sum of squares by cluster:
+## [1] 2502.9231 1252.5833  806.7273
+##  (between_SS / total_SS =  53.3 %)
+## 
+## Available components:
+## 
+## [1] &quot;cluster&quot;      &quot;centers&quot;      &quot;totss&quot;        &quot;withinss&quot;     &quot;tot.withinss&quot;
+## [6] &quot;betweenss&quot;    &quot;size&quot;         &quot;iter&quot;         &quot;ifault&quot;</code></pre>
+<pre class="r"><code>for(i in 2:10){kms &lt;- kmeans(SurNV, centers = i)
+sil &lt;- silhouette(kms$cluster, dist(SurNV)) 
+SurNVsil[i] &lt;- mean(sil[,3])
+}
+
+ggplot()+geom_line(aes(x=1:10, y=SurNVsil))+scale_x_continuous(name= &quot;k&quot;, breaks=1:10)+ggtitle(&quot;K vs Average Silhouette Widths&quot;)+theme(plot.title = element_text(hjust = 0.5))+labs(x= &quot;k values&quot;, y=&quot;Average Silhouette Widths&quot;)</code></pre>
+<pre><code>## Warning: Removed 1 row(s) containing missing values (geom_path).</code></pre>
+<p><img src="../Project1Rmdfile_files/figure-html/unnamed-chunk-9-1.png" width="672" />
+SurNV contains all of the complete numeric variables to be used in PAM clustering that were not simply record keeping columns. This graph shows the peak at a sil_width of 4 will be the best number of clusters to use for PAM.</p>
+<pre class="r"><code>SurPam &lt;- SurNV %&gt;%  pam(k=4) 
+
+Surpamclust &lt;- SurNV %&gt;% mutate(cluster = as.factor(SurPam$clustering))
+
+Surpamclust %&gt;% group_by(cluster) %&gt;% summarise_if(is.numeric, mean, na.rm=T)</code></pre>
+<pre><code>## # A tibble: 4 x 5
+##   cluster total_votes_received   age days_held immunity_idols_won
+## * &lt;fct&gt;                  &lt;dbl&gt; &lt;dbl&gt;     &lt;dbl&gt;              &lt;dbl&gt;
+## 1 1                       7.29  36.6      7.48              1.05 
+## 2 2                       7.45  31.5     24                 1.36 
+## 3 3                       9.12  24.5      4.12              1.12 
+## 4 4                      10.4   50.2     18.6               0.778</code></pre>
+<pre class="r"><code>Surpamclust %&gt;% ggplot(aes(x=age, y=days_held, color=cluster))+geom_point()+ggtitle(&quot;Scatterplot of Total Votes Received and Age Clustered&quot;)+theme(plot.title = element_text(hjust=0.5, size=10))+labs(x=&quot;Age&quot;, y=&quot;Days Held&quot;)</code></pre>
+<p><img src="../Project1Rmdfile_files/figure-html/unnamed-chunk-10-1.png" width="672" />
+PAM clustering divided the numeric variables into these four clusters. There is not one cluster with the highest means in all age, days held, total votes received, and immunity idols won.</p>
+<pre class="r"><code>install.packages(&quot;GGally&quot;)</code></pre>
+<pre><code>## Installing package into &#39;/stor/home/nnr384/R/x86_64-pc-linux-gnu-library/3.6&#39;
+## (as &#39;lib&#39; is unspecified)</code></pre>
+<pre class="r"><code>library(GGally)</code></pre>
+<pre><code>## Registered S3 method overwritten by &#39;GGally&#39;:
+##   method from   
+##   +.gg   ggplot2</code></pre>
+<pre class="r"><code>SurNV %&gt;% mutate(cluster = as.factor(SurPam$clustering)) </code></pre>
+<pre><code>##     total_votes_received age days_held Votes.voided immunity_idols_won cluster
+## 1                     11  33        12            3                  1       1
+## 2                      4  43        27            1                  0       2
+## 5                     14  35        19            1                  0       2
+## 7                      8  28         9            0                  1       1
+## 9                      7  36         7            2                  0       1
+## 10                    11  33        12            3                  1       1
+## 11                     0  45         8            0                  4       1
+## 14                     6  33        10            0                  0       1
+## 15                    22  37         5            7                  0       1
+## 16                     8  41         1            0                  1       1
+## 17                     1  28         0            0                  1       3
+## 20                     9  25         2            3                  1       3
+## 23                    11  21        32            1                  0       2
+## 24                     9  25         2            3                  1       3
+## 25                    18  32         8            5                  1       1
+## 26                     6  28         1            0                  0       3
+## 27                     0  27         9            0                  2       1
+## 29                    11  25         2            1                  0       3
+## 30                     5  33        19            1                  2       2
+## 32                     9  43        11            2                  0       1
+## 34                    11  34         7            2                  0       1
+## 35                     7  42         8            0                  0       1
+## 47                    14  35        19            3                  0       2
+## 48                     4  54        17            3                  1       4
+## 50                    11  22         8            0                  3       3
+## 51                    18  22        10            7                  0       3
+## 52                     9  52        33            5                  2       4
+## 53                     4  38        11            4                  5       1
+## 56                    16  53        17            3                  3       4
+## 57                     0  28        12            3                  1       1
+## 59                     8  34        12            0                  0       1
+## 60                     8  21         8            0                  3       3
+## 61                     5  39         8            0                  0       1
+## 67                    14  50        15            5                  1       4
+## 68                     9  32        19            3                  0       2
+## 74                     3  29        21            2                  4       2
+## 77                     9  46         4            2                  0       1
+## 78                    16  45        17            0                  0       4
+## 81                     9  34        27            1                  4       2
+## 86                     8  45         1            3                  0       1
+## 88                     5  33        27            1                  1       2
+## 99                     6  55        19            4                  0       4
+## 100                    0  45        15            5                  0       4
+## 111                   10  54        19            4                  0       4
+## 112                    1  35         1            0                  0       1
+## 113                   19  44        15            5                  0       4
+## 119                    0  40         1            3                  5       1
+## 121                    0  27        27            1                  4       2
+## 122                    8  25        27            1                  0       2</code></pre>
+<pre class="r"><code>ggpairs(SurNV %&gt;% mutate(cluster = as.factor(SurPam$clustering)) , columns=1:4,  aes(color=cluster))</code></pre>
+<pre><code>## `stat_bin()` using `bins = 30`. Pick better value with `binwidth`.</code></pre>
+<pre><code>## `stat_bin()` using `bins = 30`. Pick better value with `binwidth`.
+## `stat_bin()` using `bins = 30`. Pick better value with `binwidth`.</code></pre>
+<p><img src="../Project1Rmdfile_files/figure-html/unnamed-chunk-11-1.png" width="672" /></p>
+<pre class="r"><code>plot(SurPam, which=2)</code></pre>
+<p><img src="../Project1Rmdfile_files/figure-html/unnamed-chunk-11-2.png" width="672" /></p>
+<pre class="r"><code>SurPam$silinfo$avg.width</code></pre>
+<pre><code>## [1] 0.2934464</code></pre>
+<p>Looking at these correlation values, no substantial structure could be found and are insignificant.<br />
+The average silhouette width is 0.293, making it a weak structure that could be artificial.</p>
+<p>Note that the <code>echo = FALSE</code> parameter was added to the code chunk to prevent printing of the R code that generated the plot.</p>
+</div>
+
+            
+        <hr>         <div class="related-posts">
+                <h5>Related Posts</h5>
+                
+              </div> 
+            </div>
+          </div>
+
+   <hr>  <div class="disqus">
+  <div id="disqus_thread"></div>
+  <script type="text/javascript">
+
+    (function() {
+      
+      
+      if (window.location.hostname == "localhost")
+        return;
+
+      var disqus_shortname = '';
+      var dsq = document.createElement('script'); dsq.type = 'text/javascript'; dsq.async = true;
+      dsq.src = '//' + disqus_shortname + '.disqus.com/embed.js';
+      (document.getElementsByTagName('head')[0] || document.getElementsByTagName('body')[0]).appendChild(dsq);
+    })();
+  </script>
+  <noscript>Please enable JavaScript to view the <a href="http://disqus.com/?ref_noscript">comments powered by Disqus.</a></noscript>
+  <a href="http://disqus.com/" class="dsq-brlink">comments powered by <span class="logo-disqus">Disqus</span></a>
+</div> 
+        </div>
+      </div>
+    </div>
+
+    
+    <footer>
+  <div id="footer">
+    <div class="container">
+      <p class="text-muted">&copy; All rights reserved. Powered by <a href="https://gohugo.io/">Hugo</a> and
+      <a href="http://www.github.com/nurlansu/hugo-sustain/">sustain</a> with ♥</p>
+    </div>
+  </div>
+</footer>
+<div class="footer"></div>
+
+
+<script src="https://ajax.googleapis.com/ajax/libs/jquery/1.11.3/jquery.min.js"></script>
+
+<script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/js/bootstrap.min.js" integrity="sha384-Tc5IQib027qvyjSMfHjOMaLkfuWVxZxUPnCJA7l2mCWNIpG9mGCD8wGNIcPD7Txa" crossorigin="anonymous"></script>
+<script src="../js/docs.min.js"></script>
+<script src="../js/main.js"></script>
+
+<script src="../js/ie10-viewport-bug-workaround.js"></script>
+
+
+    
+  </body>
+</html>

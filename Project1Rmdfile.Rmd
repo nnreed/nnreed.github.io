@@ -1,0 +1,127 @@
+---
+title: "Project 1: Explanantory Data Analysis"
+author: Nina Reed NNR384
+date: 4/4/2021
+output: 
+    html_document
+      
+---
+```{r setup, include=FALSE}
+chooseCRANmirror(graphics=FALSE, ind=1)
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+```{r eval=F}
+knitr::opts_chunk$set(echo = TRUE, eval = TRUE, fig.align = "center", warning = F, message = F,
+tidy=TRUE, tidy.opts=list(width.cutoff=60), R.options=list(max.print=100))
+```
+
+## R Markdown
+I became intersted in using these datasets because my roommate and I have started watching the show Survivor this semester. It is far more complex of a show that I remember from my child hood and is largely based on strategy. Much of this strategy is social and involves personal characteristics of the players. Strategy is also important and is dependent on winning challenges or idols.  These datasets cover these two factors and I hoped to find them interesting. 
+## Joining
+```{R}
+library(tidyverse)
+library(tibble)
+idols <- read.csv("Survivor idols found.csv")
+
+Castaways <- read.csv("castaways.csv") %>% select(-1)
+
+survivor <- inner_join(Castaways, idols, by=c("full_name"="Contestant"))
+glimpse(survivor)
+```
+The first dataset contains all relevant information on all survivor contestants with 744 observations.  The second data set is limited to the contestants who have either found or held an immunity idol with 159 observations.  I have combined these two to drop entries for players who have never found/held an idol.  The first dataset was obtained from someone on R. It contains season names and numbers, survivor full names, age, city/state, personality type, game result, original and merged tribes, total votes received, and number of immunity idols won.  
+The second dataset was compiled by a what seems to be a huge survivor fan who ran a webpage on survivor contestant stats. It contains contestant names, number of hidden idols found and held, votes voided, day idol was found and played, and notes on individual players.  
+An inner join was used to match the contestant names from the survivors who obtained idols and from overall contestants.
+
+```{R}
+SF <- survivor %>% filter(immunity_idols_won>1) %>% arrange(desc(age)) %>% mutate(days_held = Day.played - Day.found)
+survivor2 <- survivor %>% mutate(days_held = Day.played - Day.found) %>% select(-Notes)
+```
+
+## Wrangling
+```{R}
+survivor %>% summarize_if(is.numeric, mean)
+survivor %>% summarize_if(is.numeric, sd)
+```
+The mean age of survivor contestants is 33.27 years, the mean total number of votes received is 7.28 votes for these contestants that found hidden immunity idols, and the mean number of immunity idols won is 0.90. The mean day that hidden immunity idols are found is on day 29.93 and the mean number of days these hidden immunity idols are held is 0.98 days.
+The standard deviation of age if 9.24 years, 4.78 sd for total votes received and 1.30 for the number of immunity idols won.  The standard deviation for day found is 10.45 days and 0.32 for number of days held.  
+
+```{R}
+survivor %>%  summarize(mean(immunity_idols_won),sd(immunity_idols_won), var(immunity_idols_won), min(immunity_idols_won), max(immunity_idols_won))%>% pivot_longer(1:5, names_to="stats", values_to="values")
+```
+
+## Visualization 
+```{R}
+survivor %>% summarize(cor(immunity_idols_won, total_votes_received, use="pair"))
+
+cormat <- survivor %>% select_if(is.numeric) %>% cor(use="pair")
+
+cormat %>% as.data.frame() %>% rownames_to_column("var1") %>% pivot_longer(-1, names_to="var2", values_to="correlation")
+
+tidycor <- cormat %>% as.data.frame() %>% rownames_to_column("var1") %>% pivot_longer(-1, names_to="var2", values_to="correlation")
+
+tidycor %>% ggplot(aes(var1, var2, fill=correlation))+geom_tile()+scale_fill_gradient2()+theme(axis.text.x = element_text(angle = 60, hjust=1))+ggtitle("Correlation Heat Map of Survivor Numeric Variables") + geom_text(aes(label=round(correlation, 2)), color="black", size =2)
+```
+The highest correlation value of two different numeric variables was calculated to be 0.96 between "day" and "order."  This makes sense because finding a hidden immunity idol at a later day corresponds with the order in which they are found.  The lowest correlation value is between "season" and "boot.avoided."  This shows that the the number of times a player has avoided being booted has not been impacted by the season number.   
+```{R}
+library(RColorBrewer)
+nb.cols <- 16
+mycolors <- colorRampPalette(brewer.pal(6, "Set2"))(nb.cols)
+
+survivor %>% ggplot(aes(season, Votes.voided, color=immunity_idols_won))+ geom_point(size=1)+ scale_fill_manual(values=mycolors)+ggtitle("Scatterplot of Immunity Idol Wins vs Total Votes Received Faceted by Personality Type")+facet_wrap(~immunity_idols_won)
+```
+These plots faceted by number of immunity idol wins do not show much of a positive or negative relationship at all between the number of votes voided and season number.  The only relationship shown is tht there seem to be a higher number of immunity idol wins in the later seasons. However, those who won fewer immunity idols seem to be voiding more votes, likely by the use of an alternative hidden immunity idol.   
+
+```{R}
+Meanage <- survivor %>% group_by(personality_type) %>% summarize(meanage = mean(age), meanvotes= mean(total_votes_received)) %>% mutate(meanage = round(meanage,2))
+
+survivor %>% ggplot(aes(personality_type, total_votes_received, fill= personality_type))+geom_bar(stat="summary", fun=mean, position="dodge")+scale_fill_manual(values = mycolors)+theme(axis.text.x = element_text(angle = 90, hjust=1),legend.position = "none", plot.title = element_text(hjust = 1)) + geom_text(data=Meanage, aes(y=meanvotes, label=meanage),vjust=1, size=3) + ggtitle("Total Votes Received by Personality Type and Mean Age")+labs(x="Personality Type", y="Total Votes Received")
+```
+This plot shows that the INFP personality type received the greatest average total votes received compared to other  personality types.  The average age for each personality type does seem to be indicative of the average total votes received. The higher the average age, the greater the total votes received.  As Survivor is also largely a social game, both age and personality type may have an influence on likeability of players and therefore the number of votes they receive to be voted off.
+
+## PAM Clustering
+```{R}
+library(cluster)
+SurNV <- survivor2 %>% select(total_votes_received, age, days_held, Votes.voided, immunity_idols_won) %>% na.omit() 
+glimpse(SurNV)
+
+SurNVsil <- vector()
+
+kmeans1 <- SurNV %>% kmeans(3)
+kmeans1 
+
+for(i in 2:10){kms <- kmeans(SurNV, centers = i)
+sil <- silhouette(kms$cluster, dist(SurNV)) 
+SurNVsil[i] <- mean(sil[,3])
+}
+
+ggplot()+geom_line(aes(x=1:10, y=SurNVsil))+scale_x_continuous(name= "k", breaks=1:10)+ggtitle("K vs Average Silhouette Widths")+theme(plot.title = element_text(hjust = 0.5))+labs(x= "k values", y="Average Silhouette Widths")
+```
+SurNV contains all of the complete numeric variables to be used in PAM clustering that were not simply record keeping columns. This graph shows the peak at a sil_width of 4 will be the best number of clusters to use for PAM.
+
+```{R}
+SurPam <- SurNV %>%  pam(k=4) 
+
+Surpamclust <- SurNV %>% mutate(cluster = as.factor(SurPam$clustering))
+
+Surpamclust %>% group_by(cluster) %>% summarise_if(is.numeric, mean, na.rm=T)
+
+Surpamclust %>% ggplot(aes(x=age, y=days_held, color=cluster))+geom_point()+ggtitle("Scatterplot of Total Votes Received and Age Clustered")+theme(plot.title = element_text(hjust=0.5, size=10))+labs(x="Age", y="Days Held")
+```
+PAM clustering divided the numeric variables into these four clusters. There is not one cluster with the highest means in all age, days held, total votes received, and immunity idols won. 
+```{R}
+install.packages("GGally")
+library(GGally)
+
+SurNV %>% mutate(cluster = as.factor(SurPam$clustering)) 
+
+ggpairs(SurNV %>% mutate(cluster = as.factor(SurPam$clustering)) , columns=1:4,  aes(color=cluster))
+
+plot(SurPam, which=2)
+SurPam$silinfo$avg.width
+```
+Looking at these correlation values, no substantial structure could be found and are insignificant.   
+The average silhouette width is 0.293, making it a weak structure that could be artificial.
+
+
+Note that the `echo = FALSE` parameter was added to the code chunk to prevent printing of the R code that generated the plot.

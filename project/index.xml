@@ -1,0 +1,28 @@
+<?xml version="1.0" encoding="utf-8" standalone="yes"?>
+<rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom">
+  <channel>
+    <title>Projects on Nina Reed</title>
+    <link>/project/</link>
+    <description>Recent content in Projects on Nina Reed</description>
+    <generator>Hugo -- gohugo.io</generator>
+    <language>en-US</language><atom:link href="/project/index.xml" rel="self" type="application/rss+xml" />
+    <item>
+      <title>Project 1: Explanantory Data Analysis</title>
+      <link>/project/project1/</link>
+      <pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate>
+      
+      <guid>/project/project1/</guid>
+      <description>knitr::opts_chunk$set(echo = TRUE, eval = TRUE, fig.align = &amp;quot;center&amp;quot;, warning = F, message = F, tidy=TRUE, tidy.opts=list(width.cutoff=60), R.options=list(max.print=100)) R Markdown I became intersted in using these datasets because my roommate and I have started watching the show Survivor this semester. It is far more complex of a show that I remember from my child hood and is largely based on strategy. Much of this strategy is social and involves personal characteristics of the players.</description>
+    </item>
+    
+    <item>
+      <title>Project 2: Modeling, Testing, and Predicting</title>
+      <link>/project/project2/</link>
+      <pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate>
+      
+      <guid>/project/project2/</guid>
+      <description>R Markdown FinancialAid &amp;lt;- read.csv(&amp;quot;FinancialAid.csv&amp;quot;) library(dplyr) library(ggplot2) library(lmtest) library(sandwich) library(tidyverse) FinAid &amp;lt;- FinancialAid %&amp;gt;% mutate(cond = ifelse(condscholind == &amp;quot;Y&amp;quot;, 1, 0)) %&amp;gt;% select(cond, schoolname, academicyear, condscholind, ftnumstudents, numstudents, ftrecvgrant, totalrecvgrant, totalrecvgrantp, ftgrantamtmedian, ftgrantamt75, ftgrantamt25) %&amp;gt;% na.omit() FinAid$year &amp;lt;- factor(FinAid$academicyear, labels = c(&amp;quot;2014&amp;quot;, &amp;quot;2015&amp;quot;, &amp;quot;2016&amp;quot;, &amp;quot;2017&amp;quot;, &amp;quot;2018&amp;quot;))  Introduction The dataset “FinancialAid” was pulled from AccessLex Institute which compiled datasets from law schools and their annual financial aid that is reported to the American Bar Association (ABA).</description>
+    </item>
+    
+  </channel>
+</rss>

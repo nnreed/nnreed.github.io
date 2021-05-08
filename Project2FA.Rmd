@@ -1,0 +1,261 @@
+---
+title: 'Project 2: Modeling, Testing, and Predicting'
+author: "Nina Reed (nnr384)"
+date: '5/7/2021'
+output:
+  html_document:
+    toc: yes
+    toc_float:
+      collapsed: no
+      smooth_scroll: yes
+---
+
+```{r global_options, include=FALSE}
+#LEAVE THIS CHUNK ALONE!
+library(knitr)
+opts_chunk$set(fig.align="center", fig.height=5, message=FALSE, warning=FALSE, fig.width=8, tidy.opts=list(width.cutoff=60),tidy=TRUE)
+
+class_diag<-function(probs,truth){
+  
+  tab<-table(factor(probs>.5,levels=c("FALSE","TRUE")),truth)
+  acc=sum(diag(tab))/sum(tab)
+  sens=tab[2,2]/colSums(tab)[2]
+  spec=tab[1,1]/colSums(tab)[1]
+  ppv=tab[2,2]/rowSums(tab)[2]
+
+  if(is.numeric(truth)==FALSE & is.logical(truth)==FALSE) truth<-as.numeric(truth)-1
+  
+  #CALCULATE EXACT AUC
+  ord<-order(probs, decreasing=TRUE)
+  probs <- probs[ord]; truth <- truth[ord]
+  
+  TPR=cumsum(truth)/max(1,sum(truth)) 
+  FPR=cumsum(!truth)/max(1,sum(!truth))
+  
+  dup<-c(probs[-1]>=probs[-length(probs)], FALSE)
+  TPR<-c(0,TPR[!dup],1); FPR<-c(0,FPR[!dup],1)
+  
+  n <- length(TPR)
+  auc<- sum( ((TPR[-1]+TPR[-n])/2) * (FPR[-1]-FPR[-n]) )
+
+  data.frame(acc,sens,spec,ppv,auc)
+}
+```
+## R Markdown
+```{R}
+FinancialAid <-read.csv("FinancialAid.csv")
+library(dplyr)
+library(ggplot2)
+library(lmtest)
+library(sandwich)
+library(tidyverse)
+```
+
+```{R}
+FinAid <- FinancialAid %>% mutate(cond =ifelse(condscholind=="Y", 1,0)) %>% select(cond, schoolname, academicyear,condscholind, ftnumstudents,numstudents, ftrecvgrant, totalrecvgrant, totalrecvgrantp, ftgrantamtmedian, ftgrantamt75, ftgrantamt25) %>% na.omit()
+FinAid$year <- factor(FinAid$academicyear, labels=c("2014", "2015", "2016", "2017", "2018"))
+```
+## Introduction
+The dataset "FinancialAid" was pulled from AccessLex Institute which compiled datasets from law schools and their annual financial aid that is reported to the American Bar Association (ABA).  I have selected the law school names, academic year, number of students, number of full-time students receving grants, total grants received, total grant percentage, and the 25th percentile, median, and 75th percentile in grant amounts for full time students. The binomial variable is 1 if the law school requires conditional scholarships and 0 if they do not require conditional scholarships.  There are a total of 1013 observations gathered from law schools between 2014-2018.  I am interested in this data as I have been accepted into UT Law for the coming school year and would like to see how other schools distribute scholarship amounts.  
+
+## (1)MANOVA TEST
+```{R}
+library(rstatix)
+#Assumtions
+FA_sample <- FinAid %>% sample_n(1000)
+group <- FA_sample$year
+DV <- FA_sample %>% select(ftnumstudents,ftgrantamtmedian)
+sapply(split(DV, group), mshapiro_test) #test of multivariate normality
+box_m(DV, group) #test of homogeneity of covariance
+ggplot(FinAid, aes(x=ftgrantamtmedian, y=ftnumstudents))+geom_point(alpha=1)+geom_density_2d(h=20) +coord_fixed()+facet_wrap(~year)
+```
+When testing for normality within each group, all academic years had a p-value less than 0.05.  This indicates that the MANOVA multivariate normality assumption is not satisfied.  
+
+Ho:For ftnumstudents and ftgrantamtmedian, means for all years are equal.
+Ha: For at least one variable, one year mean is different.
+```{R}
+#MANOVA
+FNmanova <- manova(cbind(ftnumstudents, ftgrantamtmedian)~year, data=FinAid)
+summary(FNmanova)#significant
+summary.aov(FNmanova)
+pairwise.t.test(FinAid$ftgrantamtmedian,FinAid$year, p.adj="none")
+#1 manova, 1 anova, 10 t.tests = 12 total
+#Probability of at least one Type I error:
+1-(0.95)^12
+0.05/12 #Bonferroni correction 
+```
+A one-way MANOVA was conducted to determine the effect of ftnumstudents and ftgrantamtmedian across academic years.  This yeilded a p-value significantly less than 0.05 indicating that at least one of teh variables' mean differs for at least one academic year.  The univariate ANOVA indicated that only ftgrantamtmedian had a significant p-value less than 0.05.  
+Pairwise t-tests were then conducted, leading to 12 tests in total.  This caused the probability of at least one Type I error to be 0.4596, making the bonferroni adjusted significance level 0.0042.  Using this new significance level, one comparison (2016 & 2018) that was significant before is no longer so.  
+
+## (2)Randomization Test: 
+```{R}
+set.seed(348)
+FinAid %>% group_by(cond) %>% summarize(ftamtmeans=mean(ftgrantamtmedian)) %>% summarize(`mean_diff`=diff(ftamtmeans))
+```
+```{R}
+#Mean Difference
+ftrand<-vector()
+for(i in 1:5000){
+new<-data.frame(ftgrantamtmedian=sample(FinAid$ftgrantamtmedian),Condition=FinAid$cond)
+ftrand[i]<-mean(new[new$Condition=="1",]$ftgrantamtmedian)-
+mean(new[new$Condition=="0",]$ftgrantamtmedian)}
+
+mean(ftrand < -1218.041  | ftrand > 1218.041)
+```
+H0:Mean difference ftgrantamtmedian is 0 for schools with conditinal scholarships and schools with non-conditional scholarships.  
+HA:Mean ftgrantamtmedian is different for schools with conditinal scholarships and schools with non-conditional scholarships.  
+The mean difference test confirmed with its p-value of 0.0306 that we should reject the null hypothesis in favor of the alternate hypothesis that the median amount that schools with conditional and schools with non-conditional scholarships are offering are different.
+
+```{R}
+{hist(ftrand, main="Mean Differences in Scholarship Medians", ylab="Frequencies");abline(v=c(-1208.041, 1208.041), col="red")}
+```
+
+## (3)Linear Regression
+```{R}
+library(glmnet)
+FinAid$ftrec_c <- FinAid$ftrecvgrant - mean(FinAid$ftrecvgrant)
+FinAid$ftmed_c <- FinAid$ftgrantamtmedian - mean(FinAid$ftgrantamtmedian)
+FNfit <- lm(ftmed_c ~ ftrec_c*cond, data = FinAid)
+summary(FNfit)
+```
+The predicted median amount for a non-conditional scholarship with an average number of students receiving aid is -29.853.  When controlling for condition, every one unit increase in students receiving aid, there is a 18.444 increase in median scholarship amount.  Schools with conditional scholarships with averge numbers of students receiving aid have predicted median aid amounts 117.855 greater than schools with non-conditional scholarships with average amounts of students receiving aid.  The slope of students receiving aid on median aid amounts is 1.462 greater for conditional scholarships than non-conditional scholarships.  
+
+```{R}
+#Proportion
+summary(FNfit)
+
+#Regression Plot
+x<- scale(FinAid$ftrec_c)
+y<- scale(FinAid$ftmed_c)
+ggplot(data.frame(x,y), aes(x,y)) +geom_point()+geom_smooth(method="lm", se=F)
+
+#Assumptions
+#Linearity
+FN_samp2 <- FinAid %>% sample_n(1000)
+FNresids2 <- lm(ftmed_c ~ ftrec_c*cond, data = FN_samp2)$residuals
+FNfitted2 <- lm(ftmed_c ~ ftrec_c*cond, data = FN_samp2)$fitted.values
+ggplot() + geom_point(aes(FNfitted2, FNresids2)) + geom_hline(yintercept = 0, color="red") + labs(title = "Fitted Values and Residuals of 1000", x="Fitted Values", y=" Residuals") + theme(plot.title = element_text(hjust=0.5))
+
+#Formal Test of Normality Ho:true distribution is normal.  
+FNresids <- FNfit$residuals
+ks.test(FNresids, "pnorm", mean=0, sd(FNresids)) #pvalue=0.0272 
+
+#Homoskedasticity
+bptest(FNfit) #pvalue=0.5575 
+```
+The linear plot does not look as though it satisfies the normality assumption as the points flare out and the residuals are increasingly positive. The multiple R-squared value indicates that 0.1613 of variation in ftmed_c is explained by the overall model.  
+The Kolmogorov-Smirnov test calculated a p-value of 0.0272 indicating that the null hypothesis of normal distribution must be rejected. The Breusch-Pagan test for homoskedasticity returned a p-value of 0.5575 showing that the data has equal variances.  
+```{R}
+#uncorrected
+summary(FNfit)$coef[,1:2]
+#corrected SE
+coeftest(FNfit, vcov=vcovHC(FNfit))[,1:2]
+```
+After correcting for robust standard errors, the coefficients remained the same but each of the standard errors increased. 
+
+## (4)Bootstrapped Standard Errors
+```{R}
+bootdat <- sample_frac(FinAid, replace=T)
+samp_dist <- replicate(5000,{
+  bootdat <- sample_frac(FinAid, replace=T)
+  fita <- lm(ftmed_c ~ ftrec_c*cond, data=bootdat)
+  coef(fita)
+})
+samp_dist %>% t%>% as.data.frame %>% summarize_all(sd)
+```
+In this model, the intercept is lower than both uncorrected and corrected coeftests.  The standard errors for ftrec_c is between the two previous values and the SEs for and ftrec:cond interaction and condition are greater than both previous values. 
+
+## (5)Logistic Regression
+```{R}
+LR <- glm(cond ~ year + numstudents, data=FinAid, family="binomial")
+FinAid$year <- factor(FinAid$academicyear, labels=c("2014", "2015", "2016", "2017", "2018"))
+summary(LR)
+exp(coef(LR))
+table(FinAid$cond, FinAid$year)
+```
+The odds of an 2014 applicant getting a non-conditional scholarship with 0 other applicants to consider is 1.8341. Controlling for the number of students, the odds of a 2015 applicant receiving a conditional scholarship was 0.5935 times the admission for a 2014 applicant.  Controlling for number of academic year, every one unit in number of students increases odds of a conditional scholarship by 0.9995.  
+```{R}
+FNprob <- predict(LR, type="response")
+FNpred <- ifelse(FNprob > .5, 1, 0)
+table(prediction=FNpred, truth=FinAid$condscholind) %>% addmargins
+```
+```{R}
+class_diag(FNprob, FinAid$cond)
+```
+```{R}
+FinAid$logit <- predict(LR, type="link")
+
+FinAid %>% ggplot()+geom_density(aes(logit, color=condscholind, fill=condscholind, alpha=0.5)) + geom_vline(xintercept = 0) +labs(title="Density Plot of Logit Grouped by Scholarship Classification", x="Logit", y="Density") +theme(plot.title = element_text(hjust=0.5))
+```
+
+```{R}
+#ROC curve
+library(plotROC)
+FNROC <- ggplot(FinAid)+geom_roc(aes(d=cond, m=FNprob), n.cuts=0)
+FNROC
+calc_auc(FNROC)
+```
+The AUC value of 0.5618 indicates that year and number of students are bad indicators of scholarship classification.  
+
+## (6)More Logistic Regression
+```{R}
+FinAid2 <- FinAid %>% select(-logit, -schoolname, -academicyear, -ftgrantamt25, -ftgrantamt75, -condscholind, -ftmed_c, -ftrec_c)
+FNfit2 <- glm(cond~(.), data=FinAid2, family="binomial")
+FNprob2 <- predict(FNfit2, type="response")
+class_diag(FNprob2, FinAid2$cond)
+```
+For this logistic regression model using all variables and their interactions, the AUC of 0.6785 shows that this model is poor at predicting scholarship status.  
+The accuracy of correctly classified scholarships is 0.6130, its sensitivity to correctly classified conditional scholarships is 0.4768, its specificity to correctly classified non-conditional scholarships is 0.7328, and its PPV of scholarships classified as conditional actually conditional is 0.6108.  
+
+```{R}
+#10-fold CV 
+k=10
+FinAid2data<-FinAid2[sample(nrow(FinAid2)),] 
+folds<-cut(seq(1:nrow(FinAid2)),breaks=k,labels=F)
+diags<-NULL
+for(i in 1:k){
+  train<-FinAid2data[folds!=i,] 
+  test<-FinAid2data[folds==i,]
+  
+  truth<-test$cond 
+  
+  fit<-glm(cond~(.)^2,data=train,family="binomial")
+  
+  probs<-predict(fit,newdata = test,type="response")
+  
+  diags<-rbind(diags,class_diag(probs,truth))
+}
+summarize_all(diags,mean)
+```
+For the 10-fold CV of the same logistic regression model, the AUC increases slightly to 0.7271 which makes it a fair predictor of scholarships status.  Accuracy, sensitivity, and PPV have also increased, but specificity has decreased.  
+
+```{R}
+#LASSO
+y <- as.matrix(FinAid2$cond)
+x <- model.matrix(cond~., data=FinAid2)[,-1]
+x <- scale(x)
+cv <- cv.glmnet(x,y,family="binomial")
+Lasso <- glmnet(x, y, family = "binomial", lambda=cv$lambda.1se)
+coef(Lasso)
+```
+The LASSO showed that the ftnumstudents, ftrecvgrant, and totalrecvgrantp were predictive of scholarship status.  
+```{R}
+set.seed(348)
+k=10
+FinAid3data <- FinAid2[sample(nrow(FinAid2)),]
+folds <- cut(seq(1:nrow(FinAid2)), breaks=k, labels=F)
+diags<-NULL
+for(i in 1:k){
+  train <- FinAid3data[folds!=i,]
+  test <- FinAid3data[folds==i,]
+  truth <- test$cond
+  FinAid3fit <- glm(cond~ftnumstudents + ftrecvgrant+ totalrecvgrantp, data=train, family=binomial)
+  
+  probs3 <- predict(FinAid3fit, newdata=test, type="response")
+  diags <- rbind(diags, class_diag(probs3, truth))
+}
+summarize_all(diags, mean)
+```
+The performance of this test was worse and returned the AUC back down to a poor predictor with a value of 0.6660.  
+
+Note that the `echo = FALSE` parameter was added to the code chunk to prevent printing of the R code that generated the plot.
