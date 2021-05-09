@@ -1,0 +1,21 @@
+---
+title: TestBlogpost
+author: ''
+date: '2021-05-08'
+slug: testblogpost
+categories: []
+tags: []
+description: ''
+---
+This is how it be huh.
+[Link to project 1](/project/project1)
+[Link to google](https://www.google.com)
+
+```{R}
+1+1
+```
+
+
+```{R}
+1+2
+```
