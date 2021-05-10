@@ -1,5 +1,5 @@
 ---
-title: TestBlogpost
+title: Blog Post
 author: ''
 date: '2021-05-08'
 slug: testblogpost
@@ -7,15 +7,26 @@ categories: []
 tags: []
 description: ''
 ---
-This is how it be huh.
+![](/post/2021-05-08-testblogpost_files/pandameme.jpg)
+
+Pandas is a Python package that provides fast, flexible, and ... 
+It is well suited for different data types including tabular, ordered and unordered series, arbitrary matrix data, and other statistical data sets.  
+Pandas acts almost as an equivalent to R's dplyr.  
+- 
+When pulling dataframes, pandas nicely shows the first and last five observations.  
 [Link to project 1](/project/project1)
 [Link to google](https://www.google.com)
 
 ```{R}
 1+1
+library(reticulate)
+py_config()
+py_install("pandas")
 ```
 
-
-```{R}
-1+2
+```{python}
+import pandas as pd
+df = pd.read_csv("Survivor idols found.csv")
+df
+(df.filter(['Contestant','day found']))
 ```

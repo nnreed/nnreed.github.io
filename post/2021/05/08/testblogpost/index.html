@@ -7,7 +7,7 @@
     <meta name="author" content="Nina Reed" />
     
     <link rel="shortcut icon" type="image/x-icon" href="../../../../../img/favicon.ico">
-    <title>TestBlogpost</title>
+    <title>Blog Post</title>
     <meta name="generator" content="Hugo 0.83.1" />
     <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css" integrity="sha384-BVYiiSIFeK1dGmJRAkycuHAHRg32OmUcww7on3RYdg4Va+PmSTsz/K68vbdEjh4u" crossorigin="anonymous">
     <link rel="stylesheet" type="text/css" href="../../../../../css/main.css" />
@@ -54,7 +54,7 @@
       <div class="container">
         <div class="blog-post">
           <h3>
-            <strong><a href="../../../../../post/2021/05/08/testblogpost/">TestBlogpost</a></strong>
+            <strong><a href="../../../../../post/2021/05/08/testblogpost/">Blog Post</a></strong>
           </h3>
         </div>
  
@@ -72,13 +72,57 @@
               
 
 
-<p>This is how it be huh.
+<p><img src="../../../../../post/2021-05-08-testblogpost_files/pandameme.jpg" /></p>
+<p>Pandas is a Python package that provides fast, flexible, and …
+It is well suited for different data types including tabular, ordered and unordered series, arbitrary matrix data, and other statistical data sets.<br />
+Pandas acts almost as an equivalent to R’s dplyr.<br />
+-
+When pulling dataframes, pandas nicely shows the first and last five observations.<br />
 <a href="../../../../../project/project1">Link to project 1</a>
 <a href="https://www.google.com">Link to google</a></p>
 <pre class="r"><code>1+1</code></pre>
 <pre><code>## [1] 2</code></pre>
-<pre class="r"><code>1+2</code></pre>
-<pre><code>## [1] 3</code></pre>
+<pre class="r"><code>library(reticulate)
+py_config()</code></pre>
+<pre><code>## python:         /stor/home/nnr384/.local/share/r-miniconda/envs/r-reticulate/bin/python
+## libpython:      /stor/home/nnr384/.local/share/r-miniconda/envs/r-reticulate/lib/libpython3.6m.so
+## pythonhome:     /stor/home/nnr384/.local/share/r-miniconda/envs/r-reticulate:/stor/home/nnr384/.local/share/r-miniconda/envs/r-reticulate
+## version:        3.6.13 | packaged by conda-forge | (default, Feb 19 2021, 05:36:01)  [GCC 9.3.0]
+## numpy:          /stor/home/nnr384/.local/share/r-miniconda/envs/r-reticulate/lib/python3.6/site-packages/numpy
+## numpy_version:  1.19.5</code></pre>
+<pre class="r"><code>py_install(&quot;pandas&quot;)</code></pre>
+<pre class="python"><code>import pandas as pd
+df = pd.read_csv(&quot;Survivor idols found.csv&quot;)
+df</code></pre>
+<pre><code>##         Contestant  ...                                              Notes
+## 0    Gary Hogeboom  ...   (*Played before vote, couldn&#39;t be voted against)
+## 1      Terry Deitz  ...               (*Super idol, found on Exile Island)
+## 2         Yul Kwon  ...               (*Super idol, found on Exile Island)
+## 3     Yau-Man Chan  ...  No vote split; Yau-Man saves himself, Stacy bo...
+## 4       Mookie Lee  ...  Found at Moto camp; given to Alex at F9 Tribal...
+## ..             ...  ...                                                ...
+## 162            NaN  ...                                                NaN
+## 163            NaN  ...                                                NaN
+## 164            NaN  ...                                                NaN
+## 165            NaN  ...                                                NaN
+## 166            NaN  ...                                                NaN
+## 
+## [167 rows x 12 columns]</code></pre>
+<pre class="python"><code>(df.filter([&#39;Contestant&#39;,&#39;day found&#39;]))</code></pre>
+<pre><code>##         Contestant
+## 0    Gary Hogeboom
+## 1      Terry Deitz
+## 2         Yul Kwon
+## 3     Yau-Man Chan
+## 4       Mookie Lee
+## ..             ...
+## 162            NaN
+## 163            NaN
+## 164            NaN
+## 165            NaN
+## 166            NaN
+## 
+## [167 rows x 1 columns]</code></pre>
 
             
         <hr>         <div class="related-posts">
