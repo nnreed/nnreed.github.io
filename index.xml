@@ -13,11 +13,9 @@
       <pubDate>Sat, 08 May 2021 00:00:00 +0000</pubDate>
       
       <guid>/post/2021/05/08/testblogpost/</guid>
-      <description>Pandas is a Python package that provides fast, flexible, and … It is well suited for different data types including tabular, ordered and unordered series, arbitrary matrix data, and other statistical data sets.
-Pandas acts almost as an equivalent to R’s dplyr.
-- When pulling dataframes, pandas nicely shows the first and last five observations.
-Link to project 1 Link to google
-1+1 ## [1] 2 library(reticulate) py_config() ## python: /stor/home/nnr384/.</description>
+      <description>Pandas is a Python package that provides fast and flexible data structures. It is well suited for different data types including tabular, ordered and unordered series, arbitrary matrix data, and other statistical data sets.
+Pandas wrangling acts almost as an equivalent to R’s dplyr.
+- dplyr select = pandas filter - dplyr filter = pandas query - dplyr arrange = pandas sort_values - dplyr rename = pandas rename - dplyr group_by = pandas groupby - dplyr mutate = pandas assign - dplyr summarize = pandas agg</description>
     </item>
     
     <item>

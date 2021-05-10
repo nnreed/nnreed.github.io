@@ -73,15 +73,18 @@
 
 
 <p><img src="../../../../../post/2021-05-08-testblogpost_files/pandameme.jpg" /></p>
-<p>Pandas is a Python package that provides fast, flexible, and …
+<p>Pandas is a Python package that provides fast and flexible data structures.
 It is well suited for different data types including tabular, ordered and unordered series, arbitrary matrix data, and other statistical data sets.<br />
-Pandas acts almost as an equivalent to R’s dplyr.<br />
--
-When pulling dataframes, pandas nicely shows the first and last five observations.<br />
-<a href="../../../../../project/project1">Link to project 1</a>
-<a href="https://www.google.com">Link to google</a></p>
-<pre class="r"><code>1+1</code></pre>
-<pre><code>## [1] 2</code></pre>
+Pandas wrangling acts almost as an equivalent to R’s dplyr.<br />
+- dplyr select = pandas filter
+- dplyr filter = pandas query
+- dplyr arrange = pandas sort_values
+- dplyr rename = pandas rename
+- dplyr group_by = pandas groupby
+- dplyr mutate = pandas assign
+- dplyr summarize = pandas agg</p>
+<p>When pulling dataframes, pandas nicely shows the first and last five observations.<br />
+<a href="../../../../../project/project1">Link to project 1</a></p>
 <pre class="r"><code>library(reticulate)
 py_config()</code></pre>
 <pre><code>## python:         /stor/home/nnr384/.local/share/r-miniconda/envs/r-reticulate/bin/python
@@ -108,21 +111,6 @@ df</code></pre>
 ## 166            NaN  ...                                                NaN
 ## 
 ## [167 rows x 12 columns]</code></pre>
-<pre class="python"><code>(df.filter([&#39;Contestant&#39;,&#39;day found&#39;]))</code></pre>
-<pre><code>##         Contestant
-## 0    Gary Hogeboom
-## 1      Terry Deitz
-## 2         Yul Kwon
-## 3     Yau-Man Chan
-## 4       Mookie Lee
-## ..             ...
-## 162            NaN
-## 163            NaN
-## 164            NaN
-## 165            NaN
-## 166            NaN
-## 
-## [167 rows x 1 columns]</code></pre>
 
             
         <hr>         <div class="related-posts">
