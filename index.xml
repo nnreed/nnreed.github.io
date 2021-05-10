@@ -15,7 +15,11 @@
       <guid>/post/2021/05/08/testblogpost/</guid>
       <description>Pandas is a Python package that provides fast and flexible data structures. It is well suited for different data types including tabular, ordered and unordered series, arbitrary matrix data, and other statistical data sets.
 Pandas wrangling acts almost as an equivalent to R’s dplyr.
-- dplyr select = pandas filter - dplyr filter = pandas query - dplyr arrange = pandas sort_values - dplyr rename = pandas rename - dplyr group_by = pandas groupby - dplyr mutate = pandas assign - dplyr summarize = pandas agg</description>
+1. dplyr select = pandas filter
+2. dplyr filter = pandas query
+3. dplyr arrange = pandas sort_values
+4. dplyr rename = pandas rename
+5. dplyr group_by = pandas groupby</description>
     </item>
     
     <item>

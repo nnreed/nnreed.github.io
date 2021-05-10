@@ -76,13 +76,13 @@
 <p>Pandas is a Python package that provides fast and flexible data structures.
 It is well suited for different data types including tabular, ordered and unordered series, arbitrary matrix data, and other statistical data sets.<br />
 Pandas wrangling acts almost as an equivalent to R’s dplyr.<br />
-- dplyr select = pandas filter
-- dplyr filter = pandas query
-- dplyr arrange = pandas sort_values
-- dplyr rename = pandas rename
-- dplyr group_by = pandas groupby
-- dplyr mutate = pandas assign
-- dplyr summarize = pandas agg</p>
+1. dplyr select = pandas filter<br />
+2. dplyr filter = pandas query<br />
+3. dplyr arrange = pandas sort_values<br />
+4. dplyr rename = pandas rename<br />
+5. dplyr group_by = pandas groupby<br />
+6. dplyr mutate = pandas assign<br />
+7. dplyr summarize = pandas agg</p>
 <p>When pulling dataframes, pandas nicely shows the first and last five observations.<br />
 <a href="../../../../../project/project1">Link to project 1</a></p>
 <pre class="r"><code>library(reticulate)
@@ -111,6 +111,8 @@ df</code></pre>
 ## 166            NaN  ...                                                NaN
 ## 
 ## [167 rows x 12 columns]</code></pre>
+<pre class="python"><code>df.groupby(&#39;played&#39;)</code></pre>
+<pre><code>## &lt;pandas.core.groupby.generic.DataFrameGroupBy object at 0x7fcee01d30b8&gt;</code></pre>
 
             
         <hr>         <div class="related-posts">
